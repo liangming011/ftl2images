@@ -6,16 +6,19 @@ import freemarker.template.Template;
 import io.netty.util.CharsetUtil;
 import org.springframework.util.Base64Utils;
 import org.w3c.dom.Document;
+import org.xhtmlrenderer.layout.SharedContext;
 import org.xhtmlrenderer.swing.Java2DRenderer;
 
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Html2ImageUtil {
@@ -46,6 +49,22 @@ public class Html2ImageUtil {
         Document document = builder.parse(new ByteArrayInputStream(html.getBytes()));
 
         Java2DRenderer renderer = new Java2DRenderer(document, width);
+        SharedContext sharedContext = renderer.getSharedContext();
+        sharedContext.setDotsPerPixel(2);
+        sharedContext.setDPI(600);
+        Map map = new HashMap();
+        map.put(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+        map.put(RenderingHints.KEY_COLOR_RENDERING,RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+        map.put(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+        map.put(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        map.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        map.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        map.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        map.put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+        map.put(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        renderer.setRenderingHints(map);
+
+
         BufferedImage image = renderer.getImage();
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
