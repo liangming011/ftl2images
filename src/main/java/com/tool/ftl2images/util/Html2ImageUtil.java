@@ -1,5 +1,6 @@
 package com.tool.ftl2images.util;
 
+import cn.hutool.core.img.Img;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -9,7 +10,6 @@ import org.w3c.dom.Document;
 import org.xhtmlrenderer.layout.SharedContext;
 import org.xhtmlrenderer.swing.Java2DRenderer;
 
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
@@ -68,7 +68,10 @@ public class Html2ImageUtil {
         BufferedImage image = renderer.getImage();
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", stream);
+
+        // ImageIO.write(image, "png", stream);
+        Img.from(image).setQuality(0.5).write(stream);
+
         // data:image/png;base64,{}
         return "data:image/png;base64,"+ Base64Utils.encodeToString(stream.toByteArray());
     }
