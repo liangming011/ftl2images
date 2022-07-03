@@ -4,24 +4,31 @@ import cn.hutool.core.img.Img;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import io.netty.util.CharsetUtil;
 import org.springframework.util.Base64Utils;
 import org.w3c.dom.Document;
 import org.xhtmlrenderer.layout.SharedContext;
 import org.xhtmlrenderer.swing.Java2DRenderer;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author liangming
+ */
 public class Html2ImageUtil {
+
+    private Html2ImageUtil() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static final String FTL_TEMPLATE = "Index.ftl";
 
@@ -32,7 +39,7 @@ public class Html2ImageUtil {
 
     }
 
-    public static String freemarkerRender(Map<String, Object> data, String ftlHtml) throws Exception {
+    public static String freemarkerRender(Map<String, Object> data, String ftlHtml) throws IOException, TemplateException {
         Writer out = new StringWriter();
         StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
         stringTemplateLoader.putTemplate(FTL_TEMPLATE, ftlHtml);
@@ -40,11 +47,10 @@ public class Html2ImageUtil {
         Template template = configuration.getTemplate(FTL_TEMPLATE, CharsetUtil.UTF_8.name());
         template.process(data, out);
         out.flush();
-        String html = out.toString();
-        return html;
+        return out.toString();
     }
 
-    public static String createImages(String html, int width) throws Exception {
+    public static String createImages(String html, int width) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document document = builder.parse(new ByteArrayInputStream(html.getBytes()));
 
@@ -52,9 +58,9 @@ public class Html2ImageUtil {
         SharedContext sharedContext = renderer.getSharedContext();
         sharedContext.setDotsPerPixel(2);
         sharedContext.setDPI(600);
-        Map map = new HashMap();
-        map.put(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        map.put(RenderingHints.KEY_COLOR_RENDERING,RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+        Map<RenderingHints.Key, Object> map = new HashMap<>(10);
+        map.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        map.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
         map.put(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
         map.put(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         map.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
@@ -73,6 +79,6 @@ public class Html2ImageUtil {
         Img.from(image).setQuality(0.5).write(stream);
 
         // data:image/png;base64,{}
-        return "data:image/png;base64,"+ Base64Utils.encodeToString(stream.toByteArray());
+        return "data:image/png;base64," + Base64Utils.encodeToString(stream.toByteArray());
     }
 }
