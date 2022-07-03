@@ -13,7 +13,10 @@ import java.util.Objects;
 @RestController
 public class Ftl2ImagesController {
 
-
+    /**
+     * Java的FreeMarker模板引擎的几种模板加载方式
+     * https://zhuanlan.zhihu.com/p/367432688
+     **/
     @PostMapping("/ftl2Image")
     public String ftl2Image(@RequestBody JSONObject jsonObject) throws Exception {
         Map<String,Object> map = JSON.parseObject(jsonObject.getString("data"),Map.class);
