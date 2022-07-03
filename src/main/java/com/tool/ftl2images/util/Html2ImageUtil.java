@@ -1,6 +1,6 @@
 package com.tool.ftl2images.util;
 
-import freemarker.cache.URLTemplateLoader;
+import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import io.netty.util.CharsetUtil;
@@ -16,31 +16,25 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Map;
 
 public class Html2ImageUtil {
+
+    public static final String FTL_TEMPLATE = "Index.ftl";
 
     private static Configuration configuration;
 
     static {
         configuration = new Configuration(Configuration.VERSION_2_3_31);
-        configuration.setTemplateLoader(new URLTemplateLoader() {
-            @Override
-            protected URL getURL(String s) {
-                try {
-                    return new URL("http://localhost:8080/cache/ftl");
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
+
     }
 
-    public static String freemarkerRender(Map<String, Object> data, String ftlname) throws Exception {
+    public static String freemarkerRender(Map<String, Object> data, String ftlHtml) throws Exception {
         Writer out = new StringWriter();
-        Template template = configuration.getTemplate(ftlname, CharsetUtil.UTF_8.name());
+        StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
+        stringTemplateLoader.putTemplate(FTL_TEMPLATE, ftlHtml);
+        configuration.setTemplateLoader(stringTemplateLoader);
+        Template template = configuration.getTemplate(FTL_TEMPLATE, CharsetUtil.UTF_8.name());
         template.process(data, out);
         out.flush();
         String html = out.toString();
